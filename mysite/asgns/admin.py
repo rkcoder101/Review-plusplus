@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from .models.user import User
 from .models.team import Team
 from .models.assignment import Assignment
@@ -13,6 +12,7 @@ from .models.review import Review
 from .models.completed_assignment import Completed_Assignment
 from .models.attachments_for_submissions import Attachment_for_submission
 from .models.administrator import Administrator
+from .models.assignment_allocated_to import Assignment_Allocated_to
 # Register your models here.
 
 admin.site.register(User)
@@ -28,7 +28,7 @@ admin.site.register(Review)
 admin.site.register(Completed_Assignment)
 admin.site.register(Attachment_for_submission)
 admin.site.register(Administrator)
-
+admin.site.register(Assignment_Allocated_to)
 
 
 

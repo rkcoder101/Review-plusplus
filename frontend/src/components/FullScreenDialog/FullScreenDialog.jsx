@@ -29,11 +29,8 @@ export default function FullScreenDialog({ open, onClose, children }) {
             aria-label="close"
           >
             <CloseIcon />
-          </IconButton>
+          </IconButton>         
           
-          <Button autoFocus color="inherit" onClick={onClose}>
-            Save
-          </Button>
         </Toolbar>
       </AppBar>
 

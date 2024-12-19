@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -16,7 +15,8 @@ import { alpha } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import AddIcon from '@mui/icons-material/Add';
-
+import { Button } from '@mui/material';
+import TextField from '@mui/material/TextField';
 
 function EnhancedTableToolbar({ numSelected }) {
     return (
@@ -64,17 +64,38 @@ function EnhancedTableToolbar({ numSelected }) {
 }
 
 export default function TeamCreation() {
+    const [title, setTitle] = useState('');
     const [users, setUsers] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [selected, setSelected] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Fetch data from the API
+
     useEffect(() => {
-        fetch('https://jsonplaceholder.typicode.com/users')
-            .then(response => response.json())
-            .then(data => setUsers(data))
-            .catch(error => console.error('Error fetching data:', error));
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/asgns/users/', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch users: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Fetched users:', data);
+                setUsers(data);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                setUsers([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
     }, []);
 
     const handleSelectAllClick = (event) => {
@@ -119,10 +140,17 @@ export default function TeamCreation() {
 
     const isSelected = (id) => selected.indexOf(id) !== -1;
 
+    if (loading) {
+        return <div className="flex justify-center items-center m-10 text-2xl">Loading...</div>;
+    }
+
     return (
-        <div className='m-10'>
-            <div className='flex flex-row justify-center items-center'>
-                <h1 className='text-4xl'>Make Your Team</h1>
+        <div className="m-10 flex flex-col justify-center gap-4">
+            <div className="flex flex-row justify-center ">
+                <h1 className="text-4xl">Make Your Team</h1>
+            </div>
+            <div className='flex flex-row justify-center'>
+                <TextField placeholder='Enter team name' value={title} onChange={(e) => { setTitle(e.target.value); }} />
             </div>
             <div>
                 <Box sx={{ width: '80%', margin: 'auto' }}>
@@ -132,19 +160,27 @@ export default function TeamCreation() {
                             <Table sx={{ minWidth: 750 }} aria-label="user data table">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell padding="checkbox" sx={{ fontSize: '1.2rem' }} >
+                                        <TableCell padding="checkbox" sx={{ fontSize: '1.2rem' }}>
                                             <Checkbox
                                                 color="primary"
-                                                indeterminate={selected.length > 0 && selected.length < users.length}
-                                                checked={users.length > 0 && selected.length === users.length}
+                                                indeterminate={
+                                                    selected.length > 0 &&
+                                                    selected.length < users.length
+                                                }
+                                                checked={
+                                                    users.length > 0 &&
+                                                    selected.length === users.length
+                                                }
                                                 onChange={handleSelectAllClick}
                                                 inputProps={{
                                                     'aria-label': 'select all users',
                                                 }}
                                             />
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: '1.2rem' }} >Email</TableCell>
-                                        <TableCell sx={{ fontSize: '1.2rem' }} >Name</TableCell>
+                                        <TableCell sx={{ fontSize: '1.2rem' }}>
+                                            Enrollment Number
+                                        </TableCell>
+                                        <TableCell sx={{ fontSize: '1.2rem' }}>Name</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -162,7 +198,7 @@ export default function TeamCreation() {
                                                 key={user.id}
                                                 selected={isItemSelected}
                                             >
-                                                <TableCell padding="checkbox" sx={{ fontSize: '1.2rem' }} >
+                                                <TableCell padding="checkbox" sx={{ fontSize: '1.2rem' }}>
                                                     <Checkbox
                                                         color="primary"
                                                         checked={isItemSelected}
@@ -171,8 +207,12 @@ export default function TeamCreation() {
                                                         }}
                                                     />
                                                 </TableCell>
-                                                <TableCell sx={{ fontSize: '1.2rem' }} >{user.email}</TableCell>
-                                                <TableCell sx={{ fontSize: '1.2rem' }} >{user.name}</TableCell>
+                                                <TableCell sx={{ fontSize: '1.2rem' }}>
+                                                    {user.enrollment_number}
+                                                </TableCell>
+                                                <TableCell sx={{ fontSize: '1.2rem' }}>
+                                                    {user.name}
+                                                </TableCell>
                                             </TableRow>
                                         );
                                     })}
@@ -191,6 +231,53 @@ export default function TeamCreation() {
                     </Paper>
                 </Box>
             </div>
+            <div className='flex flex-row justify-center gap-8'>
+                <Button onClick={() => { console.log(selected) }}>Log Members</Button>
+                <Button
+                    variant="contained"
+                    onClick={async () => {
+                        if (!title) {
+                            alert("Please enter a team name.");
+                            return;
+                        }
+                        if (selected.length === 0) {
+                            alert("Please select at least one member.");
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('http://127.0.0.1:8000/asgns/teams/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                credentials: 'include',
+                                body: JSON.stringify({
+                                    name: title,
+                                    members: selected,
+                                }),
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`Failed to save team: ${response.statusText}`);
+                            }
+
+                            const data = await response.json();
+                            console.log('Team saved:', data);
+                            alert(data.message);
+                            setTitle(''); 
+                            setSelected([]); 
+                        } catch (error) {
+                            console.error('Error saving team:', error);
+                            alert('Failed to save the team. Please try again.');
+                        }
+                    }}
+                >
+                    Save
+                </Button>
+
+            </div>
         </div>
     );
 }
+

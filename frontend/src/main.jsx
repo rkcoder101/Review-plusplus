@@ -21,33 +21,37 @@ import Home from './components/Home/Home';
 import Login from './components/Login/Login'
 import Signup from './components/Signup/Signup'
 import FullScreenDialog from './components/FullScreenDialog/FullScreenDialog';
+import { Provider } from 'react-redux';
+import store from './redux/store';
+
 const router = createBrowserRouter(
   createRoutesFromElements(
-      <>
-    <Route path="login" element={<Login />} />
+    <>
+      <Route path="login" element={<Login />} />
       <Route path="signup" element={<Signup />} />
-    <Route path="/" element={<Layout />}>
-      <Route path='dashboard' element={<Home/>}></Route>
-      <Route path="users/:id" element={<Profile />}>
-        <Route index element={<ProfileForm />} /> 
-        <Route path="submission_history" element={<SubmissionHistory />} />
-        <Route path="review_history" element={<ReviewHistory />} />
+      <Route path="/" element={<Layout />}>
+        <Route path='dashboard' element={<Home />}></Route>
+        <Route path="users/:id" element={<Profile />}>
+          <Route index element={<ProfileForm />} />
+          <Route path="submission_history" element={<SubmissionHistory />} />
+          <Route path="review_history" element={<ReviewHistory />} />
+        </Route>
+        <Route path="createteam" element={<TeamCreation />} />
+        <Route path="teams/:id" element={<TeamPage />} />
+        <Route path="assignments/:id" element={<ContentListing />}>
+          <Route path="reviews" element={<Review />} />
+        </Route>
+
       </Route>
-      <Route path="createteam" element={<TeamCreation />} />
-      <Route path="teams/:id" element={<TeamPage />} />
-      <Route path="assignments/:id" element={<ContentListing />}>
-        <Route path="reviews" element={<Review />} />
-      </Route>
-      
-    </Route>
     </>
   )
 );
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <NextUIProvider>
-      <RouterProvider router={router} />      
-    </NextUIProvider>
+    <Provider store={store}>
+      <NextUIProvider>
+        <RouterProvider router={router} />
+      </NextUIProvider>
+    </Provider>
   </StrictMode>
 );

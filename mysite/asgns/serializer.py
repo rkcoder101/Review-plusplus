@@ -51,9 +51,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields= '__all__'
 
 class ReviewerSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='user.name', read_only=True)
+    enrollment_number= serializers.CharField(source='user.enrollment_number',read_only=True)
     class Meta:
-        model=Reviewer
-        fields= '__all__'
+        model = Reviewer
+        fields = ['id', 'user', 'name', 'enrollment_number']  
+
 
 class ReviewHistorySerializer(serializers.ModelSerializer):
     class Meta:
