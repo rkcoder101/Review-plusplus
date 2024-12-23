@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
 import CircularProgress from '@mui/material/CircularProgress';
 
-const UserSelectionDialog = ({ open, onClose, onUsersSelected }) => {
+const UserSelectionDialog = ({id, open, onClose, onUsersSelected }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedUserIds, setSelectedUserIds] = useState([]);
@@ -15,7 +15,7 @@ const UserSelectionDialog = ({ open, onClose, onUsersSelected }) => {
     useEffect(() => {
         if (open) {
             setLoading(true);
-            fetch('http://127.0.0.1:8000/asgns/users/', {
+            fetch(`http://127.0.0.1:8000/asgns/userlistforasgn/?user_id=${id}`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {

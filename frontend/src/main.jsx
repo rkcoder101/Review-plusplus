@@ -8,19 +8,19 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
+
 import ProfileForm from './components/ProfileForm/ProfileForm';
 import Layout from './components/Layout/Layout';
 import Profile from './components/Profile/Profile';
 import SubmissionHistory from './components/SubmissionHistory/SubmissionHistory';
 import ReviewHistory from './components/ReviewHistory/ReviewHistory';
-import TeamCreation from './components/TeamCreation/TeamCreation';
 import TeamPage from './components/TeamPage/TeamPage';
-import ContentListing from './components/ContentListing/ContentListing';
-import Review from './components/Review/Review';
+import Review from './components/Review/ReviewPage';
 import Home from './components/Home/Home';
 import Login from './components/Login/Login'
 import Signup from './components/Signup/Signup'
-import FullScreenDialog from './components/FullScreenDialog/FullScreenDialog';
+import AsgnViewReviewee from './components/AsgnView_reviewee/AsgnView_reviewee';
+
 import { Provider } from 'react-redux';
 import store from './redux/store';
 
@@ -36,11 +36,11 @@ const router = createBrowserRouter(
           <Route path="submission_history" element={<SubmissionHistory />} />
           <Route path="review_history" element={<ReviewHistory />} />
         </Route>
-        <Route path="createteam" element={<TeamCreation />} />
-        <Route path="teams/:id" element={<TeamPage />} />
-        <Route path="assignments/:id" element={<ContentListing />}>
-          <Route path="reviews" element={<Review />} />
+        <Route path="assignment/:id" element={<AsgnViewReviewee />}>
+          
         </Route>
+        <Route path="team/:id" element={<TeamPage />} />
+        <Route path="review/:id" element={<Review />} />
 
       </Route>
     </>

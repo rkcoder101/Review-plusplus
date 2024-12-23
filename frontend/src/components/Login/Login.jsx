@@ -5,15 +5,15 @@ import Channeli_Icon from '../Channeli_Icon/Channeli_Icon';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOrLoginUser} from '../../redux/slices/userSlice';
+import { fetchOrLoginUser } from '../../redux/slices/userSlice';
 import { useState } from 'react';
 
 
 export default function Login() {
     //
-    
+
     const [enrollmentNumber, setEnrollmentNumber] = useState('');
-    const [password, setPassword] = useState('');    
+    const [password, setPassword] = useState('');
     const { error, status } = useSelector((state) => state.user);
 
     const handleLogin = async () => {
@@ -21,7 +21,7 @@ export default function Login() {
             alert('Please enter both enrollment number and password');
             return;
         }
-    
+
         try {
             const response = await fetch('http://127.0.0.1:8000/asgns/login/', {
                 method: 'POST',
@@ -31,17 +31,17 @@ export default function Login() {
                 credentials: 'include', // To include cookies in the request
                 body: JSON.stringify({ enrollment_number: enrollmentNumber, password: password }),
             });
-    
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.detail || 'Login failed');
             }
-            
+
             const message = await response.json();
             console.log('Login successful', message);
             window.location.href = 'http://localhost:5173/dashboard';
-    
-            
+
+
         } catch (error) {
             console.error('Error during login:', error.message);
             alert(`Login failed: ${error.message}`);
@@ -74,6 +74,7 @@ export default function Login() {
                             onChange={(e) => setEnrollmentNumber(e.target.value)} />
                         <TextField id="outlined-basic" label="Password" variant="outlined" style={{ width: '30%' }} type='password' value={password}
                             onChange={(e) => setPassword(e.target.value)} />
+
                         <Button variant="contained" sx={{ width: '30%', height: '50px' }} onClick={handleLogin}
                             disabled={status === 'loading'}>
                             <p className='text-lg'>
@@ -102,7 +103,9 @@ export default function Login() {
                             },
                         }}
                     >
-                        <b className='text-lg'>Signup</b>
+                        <a href="http://localhost:5173/signup">
+                            <b className='text-lg'>Signup</b>
+                        </a>
                     </Button>
 
                 </div>

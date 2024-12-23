@@ -216,6 +216,7 @@ class LoginView(APIView):
             "is_admin": user.is_admin,
             "is_reviewer": user.is_reviewer,
         }
+        
         return Response(user_data)
     
 

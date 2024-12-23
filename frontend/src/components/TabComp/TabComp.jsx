@@ -1,38 +1,31 @@
-import { Tabs, Tab } from "@nextui-org/react";
+import { useState } from "react";
 
+export default function TabComp({ tabs, tabContents }) {
+  const [activeTab, setActiveTab] = useState(0);
 
-export default function TabComp({ tabnames }) {
   return (
-    <div className="flex w-full flex-col bg-[#272828] ">
-      <Tabs
-        aria-label="Options"
-        color="primary"
-        variant="underlined"
-        classNames={{
-          tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider flex justify-around",
-          cursor: "w-full bg-white",
-          tab: "max-w-fit px-0 h-12",
-          tabContent: "group-data-[selected=true]:text-white group-data-[selected=true]:font-bold"
-        }}
+    <div className="w-full">
+      {/* Tabs Header */}
+      <div className="flex justify-center space-x-4 border-b border-gray-300">
+        {tabs.map((tab, index) => (
+          <button
+            key={index}
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === index
+                ? "text-blue-500 border-b-2 border-blue-500"
+                : "text-gray-500 hover:text-blue-400"
+            }`}
+            onClick={() => setActiveTab(index)}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
 
-      >
-        {
-          tabnames.map((tabname) => (
-            <Tab
-              key={tabname}
-              title={
-                <div className="flex items-center space-x-2">
-
-                  <span className="text-white">{tabname}</span>
-
-                </div>
-              }
-
-            />
-          ))
-        }
-
-      </Tabs>
+      {/* Tab Content */}
+      <div className="mt-4 p-4">
+        {tabContents[activeTab]}
+      </div>
     </div>
   );
 }

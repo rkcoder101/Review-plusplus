@@ -9,7 +9,7 @@ from .models.reviewer import Reviewer
 from .models.reviewhistory import ReviewHistory
 from .models.assignment_reviewers import AssignmentReviewer
 from .models.review import Review
-from .models.completed_assignment import Completed_Assignment
+
 from .models.attachments_for_submissions import Attachment_for_submission
 from .models.administrator import Administrator
 from .models.assignment_allocated_to import Assignment_Allocated_to
@@ -25,7 +25,6 @@ admin.site.register(ReviewHistory)
 admin.site.register(Attachment)
 admin.site.register(AssignmentReviewer)
 admin.site.register(Review)
-admin.site.register(Completed_Assignment)
 admin.site.register(Attachment_for_submission)
 admin.site.register(Administrator)
 admin.site.register(Assignment_Allocated_to)

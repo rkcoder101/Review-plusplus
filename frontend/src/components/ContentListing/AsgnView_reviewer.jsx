@@ -13,7 +13,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ReviewerSelectionDialog from './reviewerSelectionDialog';
 import TeamSelectionDialog from './teamSelectionDialog';
-export default function ContentListing() {
+export default function AsgnView_reviewer() {
     const [openUserDialog, setOpenUserDialog] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState([]);
 
@@ -208,6 +208,7 @@ export default function ContentListing() {
                         Select Users
                     </Button>
                     <UserSelectionDialog
+                        id={user.id}
                         open={openUserDialog}
                         onClose={handleCloseUserDialog}
                         onUsersSelected={handleUsersSelected}
@@ -268,9 +269,6 @@ export default function ContentListing() {
                         Log Subtasks
                     </Button>
                 </span>
-
-
-
             </div>
         </div>
     );

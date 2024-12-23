@@ -31,6 +31,7 @@ export default function Signup() {
 
                         <TextField id="outlined-basic" label="Password" variant="outlined" style={{ width: '30%' }} type='password' />
                         <TextField id="outlined-basic" label="Confirm Password" variant="outlined" style={{ width: '30%' }} type='password' />
+
                         <Button variant="contained" sx={{ width: '30%', height: '50px' }}><p className='text-lg'>Sign Up</p></Button>
 
                     </div>
@@ -54,7 +55,9 @@ export default function Signup() {
                             },
                         }}
                     >
-                        <b className='text-lg'>Login</b>
+                        <a href="http://localhost:5173/login">
+                            <b className='text-lg'>Login</b>
+                        </a>
                     </Button>
 
                 </div>
