@@ -11,7 +11,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate, login
 from rest_framework.response import Response
-
+from django.shortcuts import get_object_or_404
 
 class OAuthAuthorizeView(APIView):
     def get(self, request):
@@ -42,8 +42,8 @@ class OAuthCallbackView(APIView):
         
         response = requests.post(token_url, data=data)        
         
-        print("Response Status Code:", response.status_code)
-        print("Response Text:", response.text)
+        # print("Response Status Code:", response.status_code)
+        # print("Response Text:", response.text)
 
         try:
             tokens = response.json()
@@ -61,7 +61,7 @@ class OAuthCallbackView(APIView):
             
             if user_data_response.status_code == 200:
                 user_data = user_data_response.json()     
-                print(user_data)
+                # print(user_data)
                 enrollment_number = user_data["student"].get("enrolmentNumber")
                 full_name = user_data["person"].get("fullName", "Unknown User")
                 branch = user_data["student"].get("branch name")                
@@ -87,7 +87,7 @@ class OAuthCallbackView(APIView):
                         print("User already exists:", user.name)  
 
                     response = redirect('http://localhost:5173/dashboard')  
-                    print("Setting access_token cookie:", access_token)          
+                    # print("Setting access_token cookie:", access_token)          
                     response.set_cookie(
                         'access_token', access_token,
                         httponly=True,
@@ -110,9 +110,9 @@ class OAuthCallbackView(APIView):
 class UserDataView(APIView):
     def get(self, request):
         # Retrieve the access token from the cache
-        print("Cookies received:", request.COOKIES)
+        # print("Cookies received:", request.COOKIES)
         access_token = request.COOKIES.get('access_token')
-        print("Access Token Retrieved: mr_malicious ", access_token)
+        # print("Access Token Retrieved: mr_malicious ", access_token)
 
         if not access_token:
             return JsonResponse({"error": "Access token is missing or expired. Please re-authenticate."}, status=401)
@@ -140,6 +140,14 @@ class UserDataView(APIView):
                     "is_reviewer": user.is_reviewer,
                     "branch": user.branch,
                 }
+                if user.is_reviewer:                    
+                    reviewer = get_object_or_404(Reviewer, user=user)
+                    response_data["reviewer_id"] = reviewer.id
+
+                if user.is_admin:
+                    administrator = get_object_or_404(Administrator, user=user)
+                    response_data["admin_id"] = administrator.id
+
                 return JsonResponse(response_data)
             except User.DoesNotExist:
                 return JsonResponse({"error": "User not found"}, status=404)
@@ -216,6 +224,13 @@ class LoginView(APIView):
             "is_admin": user.is_admin,
             "is_reviewer": user.is_reviewer,
         }
+        if user.is_reviewer:
+            reviewer = get_object_or_404(Reviewer, user=user)
+            user_data["reviewer_id"] = reviewer.id
+
+        if user.is_admin:
+            administrator = get_object_or_404(Administrator, user=user)
+            user_data["admin_id"] = administrator.id
         
         return Response(user_data)
     

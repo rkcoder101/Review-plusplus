@@ -1,85 +1,83 @@
-import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function TeamPage() {
-    const [team, setTeam] = useState({
-        name: "TeamName",
-        members: [
-            { id: 1, name: "John Doe", role: "Developer" },
-            { id: 2, name: "Jane Smith", role: "Designer" },
-            { id: 3, name: "Alex Johnson", role: "Tester" },
-            { id: 4, name: "Emily Davis", role: "Developer" },
-            { id: 5, name: "Michael Brown", role: "Designer" },
-            { id: 6, name: "Sophia Lee", role: "Tester" },
-            { id: 7, name: "David Wilson", role: "Developer" },
-            { id: 8, name: "Sarah Taylor", role: "Designer" },
-            { id: 9, name: "Chris Evans", role: "Tester" },
-            { id: 10, name: "Liam White", role: "Developer" },
-        ],
-        pendingAssignments: [
-            { id: 1, title: "Assignment 1", description: "Description of Assignment 1", deadline: "2024-12-30" },
-            { id: 2, title: "Assignment 2", description: "Description of Assignment 2", deadline: "2024-12-25" },
-        ]
-    });
+    const { teamId: teamId } = useParams();
+    const [team, setTeam] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
+    useEffect(() => {
+        const fetchTeamData = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/asgns/teams/${teamId}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch team data");
+                }
+                const data = await response.json();
+                setTeam({
+                    name: data.team_name,
+                    members: data.members.map((member) => ({
+                        id: member.id,
+                        name: member.name,
+                        enrollment_number: member.enrollment_number,
+                    })),
+                    pendingAssignments: data.pending_assignments.map((assignment) => ({
+                        id: assignment.assignment__id,
+                        title: assignment.assignment__title,
+                        assigner: assignment.assignment__assigner__user__name,
+                    })),
+                });
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+        fetchTeamData();
+    }, [teamId]);
 
-    const indexOfLastMember = currentPage * itemsPerPage;
-    const indexOfFirstMember = indexOfLastMember - itemsPerPage;
-    const currentMembers = team.members.slice(indexOfFirstMember, indexOfLastMember);
+    if (loading) {
+        return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="flex items-center justify-center h-screen text-red-500">{error}</div>;
+    }
 
     return (
-        <div className="container mx-auto p-6">
-            {/* Team Name */}
-            <h1 className="text-4xl font-extrabold mb-6 text-gray-800">{team.name}</h1>
-
-            {/* Team Members Section */}
-            <div className="members-section mb-8">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-700">Team Members</h2>
-                
-                {/* Team Members Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {currentMembers.map((member) => (
-                        <div key={member.id} className="bg-gradient-to-r from-green-400 to-blue-500 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-                            <h3 className="text-xl font-semibold text-white mb-2">{member.name}</h3>
-                            <p className="text-sm text-gray-100">{member.role}</p>
+        <div className="flex h-screen">
+            {/* Left Section: Team Members */}
+            <div className="w-1/3 bg-gradient-to-b from-gray-100 to-gray-200 p-6 overflow-y-auto">
+                <h2 className="text-2xl font-bold text-gray-700 mb-4">Team Members</h2>
+                <div className="space-y-4">
+                    {team.members.map((member) => (
+                        <div
+                            key={member.id}
+                            className="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition duration-200"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-800">{member.name}</h3>
+                            <p className="text-sm text-gray-500">Enrollment: {member.enrollment_number}</p>
                         </div>
                     ))}
                 </div>
-                
-                {/* Pagination */}
-                <div className="mt-6 flex justify-center space-x-4">
-                    <button 
-                        className="bg-gray-300 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-400"
-                        onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
-                    >
-                        Previous
-                    </button>
-                    <span className="text-lg font-semibold text-gray-800">{currentPage}</span>
-                    <button 
-                        className="bg-gray-300 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-400"
-                        onClick={() => paginate(currentPage < Math.ceil(team.members.length / itemsPerPage) ? currentPage + 1 : currentPage)}
-                    >
-                        Next
-                    </button>
-                </div>
             </div>
 
-            {/* Pending Assignments Section */}
-            <div className="assignments-section mt-12">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-700">Pending Assignments</h2>
+            {/* Right Section: Pending Assignments */}
+            <div className="w-2/3 bg-white p-6 overflow-y-auto">
+                <h2 className="text-2xl font-bold text-gray-700 mb-4">Pending Assignments</h2>
                 {team.pendingAssignments.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {team.pendingAssignments.map((assignment) => (
-                            <div key={assignment.id} className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-all duration-200">
-                                <h3 className="text-xl font-semibold text-gray-800">{assignment.title}</h3>
-                                <p className="text-sm text-gray-600">{assignment.description}</p>
-                                <p className="text-sm text-gray-500">Deadline: {assignment.deadline}</p>
-                                <button className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                    Mark as Completed
-                                </button>
+                            <div
+                                key={assignment.id}
+                                onClick={() => window.location.href=`http://localhost:5173/team/${teamId}/assignment/${assignment.id}`}
+                                className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-md hover:shadow-lg transition duration-200 cursor-pointer"
+                            >
+                                <h3 className="text-lg font-semibold text-gray-800">{assignment.title}</h3>
+                                <p className="text-sm text-gray-600 mb-2">Assigned by: {assignment.assigner}</p>
                             </div>
                         ))}
                     </div>

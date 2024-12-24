@@ -16,6 +16,7 @@ class User(models.Model):
     is_admin = models.BooleanField(default=False)
     is_reviewer = models.BooleanField(default=False)
     password = models.CharField(max_length=128, null=False, default=make_password('123'))
+    
 
     def set_password(self, raw_password):
         """Hashes and sets the user's password."""

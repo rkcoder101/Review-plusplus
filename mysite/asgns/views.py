@@ -5,9 +5,11 @@ from rest_framework import status
 from .models.user import User
 from .serializer import UserSerializer, UsernameSerializer, TeamSerializer , AssignmentSerializer, AssignmentTitleSerializer, SubmissionSerializer , ReviewerSerializer, ReviewHistorySerializer, PendingAssignmentSerializer, AssignmentReviewerSerializer, ReviewSerializer
 from .models.team import Team
+from .models.administrator import Administrator
 from .models.assignment import Assignment
 from .models.submission import Submission
 from .models.reviewer import Reviewer
+from .models.review import Review
 from .models.reviewhistory import ReviewHistory
 from .models.subtask import Subtask
 from .models.assignment_allocated_to import Assignment_Allocated_to
@@ -16,6 +18,46 @@ from .models.attachment import Attachment
 from .models.attachments_for_submissions import Attachment_for_submission
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+
+class AddReviewer(APIView):
+    def post(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        if not Reviewer.objects.filter(user=user).exists():
+            Reviewer.objects.create(user=user)
+        return JsonResponse({"message": f"{user.name} is now a reviewer.", "is_reviewer": True})
+
+class RemoveReviewer(APIView):
+    def post(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        reviewer = Reviewer.objects.filter(user=user).first()
+        if reviewer:
+            reviewer.delete()
+        return JsonResponse({"message": f"{user.name} is no longer a reviewer.", "is_reviewer": False})
+
+class AddAdmin(APIView):
+    def post(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        if not Administrator.objects.filter(user=user).exists():
+            Administrator.objects.create(user=user)
+        return JsonResponse({"message": f"{user.name} is now an admin.", "is_admin": True})
+
+class RemoveAdmin(APIView):
+    def post(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        admin = Administrator.objects.filter(user=user).first()
+        if admin:
+            admin.delete()
+        return JsonResponse({"message": f"{user.name} is no longer an admin.", "is_admin": False})
+
+class RemoveAdmin(APIView):
+    def post(self,request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        admin = Administrator.objects.filter(user=user).first()
+        if admin:
+            admin.delete()
+        return JsonResponse({"message": f"{user.name} is no longer an admin.", "is_admin": user.is_admin})
 
 class UserList(APIView):   
 
@@ -70,6 +112,12 @@ class UserDetail(APIView):
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)   
     
+class ListTeams(APIView):
+    def get(self,request):        
+        team = Team.objects.all()
+        serializer = TeamSerializer(team, many=True)
+        return Response(serializer.data)
+    
 class CreateTeam(APIView):
      
     def post(self, request):
@@ -104,6 +152,31 @@ class UserTeamsView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+from django.shortcuts import get_object_or_404
+
+class TeamDetails(APIView):
+
+    def get(self, request, team_id):
+        
+        team = get_object_or_404(Team, id=team_id)
+        
+        
+        members = team.members.values("id", "name", "enrollment_number")
+        
+        
+        pending_assignments = Assignment_Allocated_to.objects.filter(team=team, is_completed=False).values(
+            "assignment__id", "assignment__title","assignment__assigner__user__name"
+        )
+               
+        data = {
+            "id": team.id,
+            "team_name": team.name,
+            "members": list(members),
+            "pending_assignments": list(pending_assignments),
+        }
+        
+        return Response(data)
         
 class CreateAssignmentView(APIView):
     parser_classes = (MultiPartParser, FormParser)
@@ -206,26 +279,30 @@ class AssignmentReviewersView(APIView):
             return Response(
                 {"error": "Assignment not found"},
                 status=status.HTTP_404_NOT_FOUND
-            )
-    
+            )  
+
+
 class CreateSubmissionView(APIView):
     def post(self, request, *args, **kwargs):
         try:
-            # Parse submission data from request
+            # Parse data from the request
             user_id = request.data.get("user")
+            team_id = request.data.get("team")
             assignment_id = request.data.get("assignment")
             reviewer_id = request.data.get("reviewer")
             comments = request.data.get("comments")
-            submission_date=request.data.get("submission_date", None)
-            # Create submission instance
+            submission_date = request.data.get("submission_date", None)
+
+            # Create the submission instance
             submission = Submission.objects.create(
                 user_id=user_id,
+                team_id=team_id,
                 assignment_id=assignment_id,
                 reviewer_id=reviewer_id,
                 comments=comments,
                 submission_date=submission_date
             )
-            
+
             # Handle attachments
             if "attachments" in request.FILES:
                 for file in request.FILES.getlist("attachments"):
@@ -233,13 +310,14 @@ class CreateSubmissionView(APIView):
                         submission=submission,
                         file=file
                     )
-            
+
             # Serialize and return response
             serializer = SubmissionSerializer(submission)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class PendingReview(APIView):
     def get(self, request, *args, **kwargs):
@@ -264,7 +342,7 @@ class PendingReview(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-from django.shortcuts import get_object_or_404
+
 class ReviewView(APIView):
      def get(self, request, submission_id):
         # Fetch the submission by ID
@@ -295,18 +373,21 @@ class ReviewView(APIView):
         
         return Response(response_data)
         
-class SubmissionHistory(APIView):
-    def get_user(self, id):
-        try:
-            return User.objects.get(id=id)
-        except User.DoesNotExist:
-            raise Http404
+class SubmissionHistory(APIView):  
     
-    def get(self, request, id ,format= None ):
-        user = self.get_user(id)  
-        submissions = Submission.objects.filter(user=user)  
-        serializer = SubmissionSerializer(submissions, many=True)  
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, id, *args, **kwargs):        
+        try:
+            
+            submissions = Submission.objects.filter(user_id=id)
+            
+           
+            serializer = SubmissionSerializer(submissions, many=True)
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Submission.DoesNotExist:
+            return Response({"error": "Submissions not found for the given user."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ReviewerList(APIView):
      
@@ -321,24 +402,16 @@ class ReviewerList(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class Review_History(APIView):
-    def get_reviewer(self, id):
-        try:
-            return Reviewer.objects.get(id=id)
-        except User.DoesNotExist:
-            raise Http404
-    def get(self, request, id , format=None):
-        reviewer= self.get_reviewer(id)
-        reviewhistory = ReviewHistory.objects.filter(reviewer=reviewer)
-        serializer = ReviewHistorySerializer(reviewhistory, many=True)
-        return Response(serializer.data)
+    
+    def get(self, request, id ):
+        reviewer = Reviewer.objects.get(user=id)
+        reviews = Review.objects.filter(submission__reviewer=reviewer).select_related('submission')
 
-    def post(self, request, format=None):
-        serializer = ReviewHistorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 from django.conf import settings
 import os
@@ -384,3 +457,15 @@ class CreateReviewView(APIView):
         
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from django.middleware.csrf import get_token
+def csrf_view(request):    
+    return JsonResponse({'csrfToken': get_token(request)})
+
+def mark_as_completed(request, allocation_id):
+    if request.method == "POST":
+        allocation = get_object_or_404(Assignment_Allocated_to, id=allocation_id)
+        allocation.is_completed = True
+        allocation.save()
+        return JsonResponse({"success": True, "message": "Assignment marked as completed."})
+    return JsonResponse({"success": False, "message": "Invalid request method."}, status=400)

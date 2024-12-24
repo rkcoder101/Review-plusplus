@@ -99,7 +99,7 @@ export default function AsgnView_reviewer() {
         formData.append('title', title);
         formData.append('date_of_assigning', `${yyyy}-${mm}-${dd}`);
         formData.append('due_date', dueDate?.toISOString().split('T')[0]);
-        formData.append('assigner_id', user.id);
+        formData.append('assigner_id', user.reviewer_id);
         selectedUsers.forEach((userId) => formData.append('user_ids', userId));
         selectedTeams.forEach((teamId) => formData.append('team_ids', teamId));
         selectedReviewers.forEach((reviewerId) => formData.append('reviewer_ids', reviewerId));

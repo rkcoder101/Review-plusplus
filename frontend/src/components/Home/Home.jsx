@@ -32,9 +32,6 @@ export default function Home() {
     const handleViewAssignmentsDialogOpen = () => setViewAssignmentsDialogOpen(true);
     const handleViewAssignmentsDialogClose = () => setViewAssignmentsDialogClose(false);
 
-    const [total_pending_assignments, setTotal_pending_assignments] = useState(3);
-    const [total_pending_reviews, setTotal_pending_reviews] = useState(3);
-
     const DemoPaper = styled(Paper)(({ theme }) => ({
         width: 200,
         height: 150,
@@ -208,38 +205,63 @@ export default function Home() {
 
 
     return (
-        <div className="flex-grow flex h-full">
-            <div className="w-[70%] bg-gray-200">
-                <TabComp
-                    tabs={tabs}
-                    tabContents={tabContents}
-                />
+        <div className="flex h-full">
+            {/* Left Section */}
+            <div className="w-[70%] bg-gray-100 p-6">
+                <TabComp tabs={tabs} tabContents={tabContents} />
             </div>
-            <div className="w-[30%] flex flex-col bg-gray-300">
-                <div className="flex flex-col justify-center items-center h-[50%] gap-8">
-                    <DemoPaper square={false}>
-                        <p className="font-bold text-lg">Total Pending Assignments</p>
-                        <p className="font-bold text-2xl">{total_pending_assignments}</p>
-                    </DemoPaper>
-                    <DemoPaper square={false}>
-                        <p className="font-bold text-lg">Total Pending Reviews</p>
-                        <p className="font-bold text-2xl">{total_pending_reviews}</p>
-                    </DemoPaper>
+
+            {/* Right Section */}
+            <div className="w-[30%] bg-white shadow-lg p-6">
+                {/* Stats Section */}
+                <div className="grid gap-6 mb-8">
+                    <div className="p-4 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg shadow-md">
+                        <p className="text-blue-900 text-sm font-semibold">Total Pending Assignments</p>
+                        <p className="text-xl font-bold text-blue-800">{pending_assignments.length}</p>
+                    </div>
+                    <div className="p-4 bg-gradient-to-r from-green-100 to-green-200 rounded-lg shadow-md">
+                        <p className="text-green-900 text-sm font-semibold">Total Pending Reviews</p>
+                        <p className="text-xl font-bold text-green-800">{pendingReviews.length}</p>
+                    </div>
                 </div>
-                <div className="flex flex-col items-center h-[50%] gap-12">
-                    <Button variant="outlined" fullWidth onClick={handleManageUsersDialogOpen}>Manage Users and Roles</Button>
-                    <Button variant="outlined" fullWidth onClick={handleViewAssignmentsDialogOpen}>View All Assignments</Button>
-                    <Button variant="outlined" fullWidth onClick={handleAssignmentDialogOpen}>Create an assignment</Button>
-                    <FullScreenDialog open={isAssignmentDialogOpen} onClose={handleAssignmentDialogClose}>
-                        <AsgnView_reviewer />
-                    </FullScreenDialog>
-                    <Button variant="outlined" fullWidth onClick={handleTeamDialogOpen}>Create a Team</Button>
-                    <FullScreenDialog open={isTeamDialogOpen} onClose={handleTeamDialogClose}>
-                        <TeamCreation />
-                    </FullScreenDialog>
+
+                {/* Actions Section */}
+                <div className="grid gap-4">
+                    {user.is_admin && (
+                        <button
+                            className="w-full py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow"
+                            onClick={()=>{window.location.href=`http://localhost:5173/manageusersandroles/`}}
+                        >
+                            Manage Users and Roles
+                        </button>
+                    )}
+                    {(user.is_admin || user.is_reviewer) && (
+                        <>
+                            <button
+                                className="w-full py-2 text-sm font-medium text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 shadow"
+                                onClick={handleAssignmentDialogOpen}
+                            >
+                                Create an Assignment
+                            </button>
+                            <FullScreenDialog open={isAssignmentDialogOpen} onClose={handleAssignmentDialogClose}>
+                                <AsgnView_reviewer />
+                            </FullScreenDialog>
+                            <button
+                                className="w-full py-2 text-sm font-medium text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 shadow"
+                                onClick={handleTeamDialogOpen}
+                            >
+                                Create a Team
+                            </button>
+                            <FullScreenDialog open={isTeamDialogOpen} onClose={handleTeamDialogClose}>
+                                <TeamCreation />
+                            </FullScreenDialog>
+
+                        </>
+                    )}
                 </div>
             </div>
         </div>
+
     );
 }
 

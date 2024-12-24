@@ -33,6 +33,27 @@ export default function ReviewPage() {
     if (error) return <div>Error: {error}</div>;
 
     const { current_submission, assignment_details, previous_submissions } = data;
+    
+    const handleMarkAsCompleted = async () => {
+        try {
+            const response = await fetch(`${BACKEND_URL}/mark_as_completed/${current_submission.allocation}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to mark as completed.");
+            }
+    
+            const result = await response.json();
+            alert(result.message); 
+        } catch (err) {
+            console.error(err.message);
+            alert("Failed to mark as completed. Please try again.");
+        }
+    };
 
     const handleSubmit = async () => {
         const reviewData = {
@@ -198,6 +219,7 @@ export default function ReviewPage() {
                         Submit
                     </button>
                     <button
+                        onClick={handleMarkAsCompleted}
                         className="ml-4 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
                     >
                         Mark as Completed
