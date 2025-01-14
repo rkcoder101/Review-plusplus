@@ -32,4 +32,7 @@ urlpatterns = [
     path('remove-admin/<int:user_id>/', views.RemoveAdmin.as_view(), name='remove_admin'),
     path('csrf/', views.csrf_view, name='csrf_view'),
     path("mark_as_completed/<int:allocation_id>/", views.mark_as_completed, name="mark_as_completed"),
+    path('assignments/<int:assignment_id>/users/<int:user_id>/reviews/', views.ReviewsForAssignmentView.as_view(),name='reviews_for_an_assignment'),
+    path('assignments/<int:assignment_id>/teams/<int:team_id>/reviews/', views.ReviewsForAssignmentViewforTeam.as_view(),name='reviews_for_an_assignment'),
+    path('password-reset/', views.ResetPasswordView.as_view(),name='reset_password'),
 ]

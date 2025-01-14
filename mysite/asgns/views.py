@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models.user import User
-from .serializer import UserSerializer, UsernameSerializer, TeamSerializer , AssignmentSerializer, AssignmentTitleSerializer, SubmissionSerializer , ReviewerSerializer, ReviewHistorySerializer, PendingAssignmentSerializer, AssignmentReviewerSerializer, ReviewSerializer
+from .serializer import UserSerializer, UsernameSerializer, TeamSerializer , AssignmentSerializer, ForCreatingReviewSerializer,  AssignmentTitleSerializer, SubmissionSerializer , ReviewerSerializer, ReviewHistorySerializer, PendingAssignmentSerializer, AssignmentReviewerSerializer, ReviewSerializer
 from .models.team import Team
 from .models.administrator import Administrator
 from .models.assignment import Assignment
@@ -432,30 +432,33 @@ def serve_file(request, file_path):
 class CreateReviewView(APIView):
     def post(self, request):
         try:
-            # Extract data from request
             data = request.data
-            
-            # Ensure the submission exists
+            print(f"Request data: {data}")
+
             submission_id = data.get("submission")
             if not submission_id:
                 return Response({"error": "Submission ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             try:
                 submission = Submission.objects.get(id=submission_id)
                 submission.checked = True
-                submission.save()  # Save the updated state to the database
-                print("checked")  # Confirm the update
+                submission.save()
+                print(f"Submission {submission_id} marked as checked.")
             except Submission.DoesNotExist:
                 return Response({"error": "Submission not found"}, status=status.HTTP_404_NOT_FOUND)
 
             # Serialize and save the review
-            serializer = ReviewSerializer(data=data)
+            serializer = ForCreatingReviewSerializer(data=data)
             if serializer.is_valid():
-                serializer.save()
+                review = serializer.save()
+                print(f"Review created successfully: {review}")
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+            print(f"Serializer errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         except Exception as e:
+            print(f"Exception occurred: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 from django.middleware.csrf import get_token
@@ -469,3 +472,46 @@ def mark_as_completed(request, allocation_id):
         allocation.save()
         return JsonResponse({"success": True, "message": "Assignment marked as completed."})
     return JsonResponse({"success": False, "message": "Invalid request method."}, status=400)
+
+class ReviewsForAssignmentView(APIView):
+    def get(self, request, assignment_id, user_id):
+        try:
+            reviews = Review.objects.filter(
+                submission__assignment_id=assignment_id,
+                submission__user_id=user_id
+            )
+            serializer = ReviewSerializer(reviews, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ReviewsForAssignmentViewforTeam(APIView):
+    def get(self, request, assignment_id, team_id):
+        try:
+            reviews = Review.objects.filter(
+                submission__assignment_id=assignment_id,
+                submission__team_id=team_id
+            )
+            serializer = ReviewSerializer(reviews, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ResetPasswordView(APIView):    
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not new_password or not confirm_password:
+            return Response({"error": "Both fields are required."}, status=400)
+
+        if new_password != confirm_password:
+            return Response({"error": "Passwords do not match."}, status=400)  
+
+        user=User.objects.get(id=user_id)      
+
+        user.set_password(new_password)
+        user.save()
+        return Response({"success": "Password reset successfully."}, status=200)

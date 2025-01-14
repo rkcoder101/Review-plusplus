@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 export default function ReviewPage() {
-    const { id } = useParams(); // Extract submission ID from URL
-    const [data, setData] = useState(null); // State to store fetched data
-    const [loading, setLoading] = useState(true); // Loading state
-    const [error, setError] = useState(null); // Error state
-    const [submissionText, setSubmissionText] = useState(""); // Submission text state
+    const { id } = useParams(); 
+    const [data, setData] = useState(null); 
+    const [loading, setLoading] = useState(true); 
+    const [error, setError] = useState(null); 
+    const [submissionText, setSubmissionText] = useState("");
 
     const BACKEND_URL = "http://127.0.0.1:8000/asgns";
 

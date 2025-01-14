@@ -14,7 +14,10 @@ export default function AsgnViewTeam() {
     const [submissionMessage, setSubmissionMessage] = useState("");
     const [showReviewerDialog, setShowReviewerDialog] = useState(false);
     const [selectedReviewer, setSelectedReviewer] = useState(null);
-    const {user,status,userError}= useUser()
+    const [reviews, setReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(true);
+    const [reviewsError, setReviewsError] = useState("");
+    const { user, status, userError } = useUser()
     const BACKEND_URL = "http://127.0.0.1:8000/asgns";
 
     useEffect(() => {
@@ -36,6 +39,25 @@ export default function AsgnViewTeam() {
 
         fetchAssignment();
     }, [assignmentId]);
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const response = await fetch(`${BACKEND_URL}/assignments/${assignmentId}/teams/${teamId}/reviews/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch reviews.");
+                }
+                const data = await response.json();
+                setReviews(data);
+            } catch (err) {
+                setReviewsError(err.message);
+            } finally {
+                setReviewsLoading(false);
+            }
+        };
+
+        fetchReviews();
+    }, [assignmentId, teamId]);
+
 
     const handleFileChange = (e) => {
         setAttachments([...e.target.files]);
@@ -49,23 +71,18 @@ export default function AsgnViewTeam() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
-        setSubmissionMessage("");     
+        setSubmissionMessage("");
 
         const formData = new FormData();
         const today = new Date().toISOString();
-        console.log(teamId)
-        console.log(assignmentId)
-        console.log(today)        
-        console.log(selectedReviewer)
-        console.log(attachments)
-        console.log(user.id)
+
         formData.append("assignment", assignmentId);
         formData.append("comments", comments);
         formData.append("user", user.id);
         formData.append("team", teamId);
         formData.append("reviewer", selectedReviewer);
         formData.append("submission_date", today);
-        
+
         attachments.forEach((file) => {
             formData.append("attachments", file);
         });
@@ -134,7 +151,7 @@ export default function AsgnViewTeam() {
                                             {subtask.attachments.length > 0 ? (
                                                 <ul className="space-y-2">
                                                     {subtask.attachments.map((attachment, i) => {
-                                                        const fileName = extractFileName(attachment.file); // Get file name dynamically
+                                                        const fileName = extractFileName(attachment.file);
                                                         return (
                                                             <li
                                                                 key={i}
@@ -166,6 +183,35 @@ export default function AsgnViewTeam() {
                         ))}
                     </div>
                 </div>
+                <div className="bg-white shadow-lg p-6 rounded-lg border border-gray-200 mt-8">
+                    <h2 className="text-xl font-bold mb-4 text-gray-900">Team Reviews</h2>
+                    {reviewsLoading && <p className="text-center text-gray-500">Loading reviews...</p>}
+                    {reviewsError && <p className="text-center text-red-500">Error: {reviewsError}</p>}
+                    {!reviewsLoading && reviews.length === 0 && (
+                        <p className="text-center text-gray-500">No reviews found for this assignment and team.</p>
+                    )}
+                    <ul className="space-y-4">
+                        {reviews.map((review) => (
+                            <li
+                                key={review.id}
+                                className="p-4 bg-[#f4f6f8] rounded-lg shadow-sm border border-gray-300"
+                            >
+                                <p className="font-semibold text-gray-700">Reviewer: {review.reviewer_name}</p>
+                                <p className="text-gray-700 font-medium">
+                                    Reviewed on: {new Date(review.date).toLocaleString()}
+                                </p>
+                                <input
+                                    type="text"
+                                    value={review.comments}
+                                    readOnly
+                                    className="w-full border-gray-300 rounded-lg p-3 bg-gray-200 mt-4"
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+
                 <div className="bg-white shadow-lg p-6 rounded-lg border border-gray-200">
                     <h2 className="text-xl font-bold mb-4 text-gray-900">Select Reviewer</h2>
                     <button

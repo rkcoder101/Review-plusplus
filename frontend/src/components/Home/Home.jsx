@@ -177,6 +177,7 @@ export default function Home() {
                             assignmentTitle={review.assignment_title}
                             submissionBy={review.submission_by}
                             submissionDate={review.submission_date}
+                            team_name={review.team_name}
                         />
                     ))
                 ) : (
@@ -202,6 +203,16 @@ export default function Home() {
             )}
         </div>
     );
+    const getFirstName = (fullName) => {
+        if (fullName) {
+            return fullName.split(' ')[0];
+        }
+        return '';
+    };
+    let first_name = "";
+    if (user) {
+        first_name = getFirstName(user.name);
+    }
 
 
     return (
@@ -214,6 +225,9 @@ export default function Home() {
             {/* Right Section */}
             <div className="w-[30%] bg-white shadow-lg p-6">
                 {/* Stats Section */}
+                <h1 className="text-4xl font-extrabold text-gray-800 text-center mb-6">
+                    Welcome, {first_name}!
+                </h1>
                 <div className="grid gap-6 mb-8">
                     <div className="p-4 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg shadow-md">
                         <p className="text-blue-900 text-sm font-semibold">Total Pending Assignments</p>
@@ -230,7 +244,7 @@ export default function Home() {
                     {user.is_admin && (
                         <button
                             className="w-full py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow"
-                            onClick={()=>{window.location.href=`http://localhost:5173/manageusersandroles/`}}
+                            onClick={() => { window.location.href = `http://localhost:5173/manageusersandroles/` }}
                         >
                             Manage Users and Roles
                         </button>

@@ -138,6 +138,7 @@ class UserDataView(APIView):
                     "name": user.name,
                     "is_admin": user.is_admin,
                     "is_reviewer": user.is_reviewer,
+                    "enrollment_number": user.enrollment_number,
                     "branch": user.branch,
                 }
                 if user.is_reviewer:                    

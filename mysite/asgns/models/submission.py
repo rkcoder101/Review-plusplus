@@ -34,6 +34,10 @@ class Submission(models.Model):
     comments = models.TextField(blank=True, null=True)
     checked = models.BooleanField(default=False)
 
+    
+    def save (self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         team_or_user = f"Team {self.team.name}" if self.team else f"User {self.user.username}"
         return f"Submission by {team_or_user} for {self.assignment.title}"

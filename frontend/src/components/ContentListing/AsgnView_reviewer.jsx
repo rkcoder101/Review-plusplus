@@ -13,6 +13,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ReviewerSelectionDialog from './reviewerSelectionDialog';
 import TeamSelectionDialog from './teamSelectionDialog';
+
 export default function AsgnView_reviewer() {
     const [openUserDialog, setOpenUserDialog] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState([]);
@@ -95,7 +96,7 @@ export default function AsgnView_reviewer() {
     const handleAssign = async () => {
         const formData = new FormData();
 
-        // Add assignment data
+        
         formData.append('title', title);
         formData.append('date_of_assigning', `${yyyy}-${mm}-${dd}`);
         formData.append('due_date', dueDate?.toISOString().split('T')[0]);
@@ -104,7 +105,7 @@ export default function AsgnView_reviewer() {
         selectedTeams.forEach((teamId) => formData.append('team_ids', teamId));
         selectedReviewers.forEach((reviewerId) => formData.append('reviewer_ids', reviewerId));
 
-        // Add subtasks and their attachments
+        
         subtasks.forEach((subtask, index) => {
             formData.append('subtasks', subtask.text);
             subtask.files.forEach((file) => {

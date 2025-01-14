@@ -13,10 +13,16 @@ export default function AsgnViewReviewee() {
     const [attachments, setAttachments] = useState([]);
     const [showReviewerDialog, setShowReviewerDialog] = useState(false);
     const [selectedReviewer, setSelectedReviewer] = useState(null);
+    //
+    const [reviews, setReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(true);
+    const [reviewsError, setReviewsError] = useState("");
+    //
 
     const BACKEND_URL = "http://127.0.0.1:8000/asgns";
 
     useEffect(() => {
+
         const fetchAssignment = async () => {
             try {
                 const response = await fetch(`${BACKEND_URL}/assignments/${id}/`);
@@ -33,7 +39,32 @@ export default function AsgnViewReviewee() {
         };
 
         fetchAssignment();
-    }, [id]);
+    }
+
+        , [id]);
+
+    useEffect(() => {
+        if (!user) return;
+
+        const fetchReviews = async () => {
+            try {
+                const response = await fetch(
+                    `${BACKEND_URL}/assignments/${id}/users/${user.id}/reviews/`
+                );
+                if (!response.ok) {
+                    throw new Error("Failed to fetch reviews.");
+                }
+                const data = await response.json();
+                setReviews(data);
+                setReviewsLoading(false);
+            } catch (err) {
+                setReviewsError(err.message);
+                setReviewsLoading(false);
+            }
+        };
+
+        fetchReviews();
+    }, [id, user]);
 
     const handleFileChange = (e) => {
         const newFiles = Array.from(e.target.files);
@@ -162,6 +193,41 @@ export default function AsgnViewReviewee() {
                             </div>
                         ))}
                     </div>
+                </div>
+                <div className="bg-white shadow-lg p-6 rounded-lg border border-gray-200 mt-8">
+                    <h2 className="text-xl font-bold mb-4 text-gray-900">Reviews</h2>
+                    {reviewsLoading && <p className="text-center text-gray-500">Loading reviews...</p>}
+                    {reviewsError && <p className="text-center text-red-500">Error: {reviewsError}</p>}
+                    {!reviewsLoading && reviews.length === 0 && (
+                        <p className="text-center text-gray-500">No reviews found for this assignment.</p>
+                    )}
+                    <ul className="space-y-4">
+                        {reviews.map((review) => (
+                            <li
+                                key={review.id}
+                                className="p-4 bg-[#f4f6f8] rounded-lg shadow-sm border border-gray-300"
+                            >
+                                <p className="font-semibold text-gray-700">Reviewer: {review.reviewer_name}</p>
+                                <p className="text-gray-700 font-medium">Reviewed on: {new Date(review.date).toLocaleString()}</p>
+                                <div className="mt-4">
+                                    <label className="block font-semibold text-gray-700 mb-2" htmlFor={`review-${review.id}`}>
+                                        Comments:
+                                    </label>
+                                    <input
+                                        id={`review-${review.id}`}
+                                        type="text"
+                                        value={review.comments}
+                                        readOnly
+                                        className="w-full border-gray-300 rounded-lg p-3 bg-gray-200"
+                                    />
+                                </div>
+                                <p className="mt-4 text-sm text-gray-500">
+                                    Submitted by: {review.submitted_by_user}{" "}
+                                    {review.submitted_by_team ? `(Team: ${review.submitted_by_team})` : ""}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
 
                 <div className="bg-white shadow-lg p-6 rounded-lg border border-gray-200">

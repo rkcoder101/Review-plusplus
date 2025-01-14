@@ -22,9 +22,14 @@ class ReviewSerializer(serializers.ModelSerializer):
     submission_date = serializers.DateTimeField(source='submission.submission_date')    
     submitted_by_user=serializers.CharField(source='submission.user.name')
     submitted_by_team=serializers.CharField(source='submission.team')
+    reviewer_name = serializers.CharField(source='submission.reviewer.user.name')
     class Meta:
         model = Review
-        fields = ['id', 'asgn_title', 'submission_date', 'comments', 'date','submitted_by_user','submitted_by_team']
+        fields = ['id', 'asgn_title', 'submission_date', 'reviewer_name','comments', 'date','submitted_by_user','submitted_by_team']
+class ForCreatingReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields= '__all__'
 
 class ReviewerSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='user.name', read_only=True)

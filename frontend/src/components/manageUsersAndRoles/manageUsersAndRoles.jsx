@@ -70,7 +70,7 @@ export default function ManageUsersAndRoles() {
     if (error) return <div>Error: {error}</div>;
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen">
+        <div className="p-6 bg-gray-100 h-full">
             <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Manage Users and Roles</h1>
             <table className="min-w-full bg-white shadow-md rounded">
                 <thead>
