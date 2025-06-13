@@ -60,8 +60,7 @@ class OAuthCallbackView(APIView):
             user_data_response = requests.get(user_data_url, headers=headers)
             
             if user_data_response.status_code == 200:
-                user_data = user_data_response.json()     
-                # print(user_data)
+                user_data = user_data_response.json()
                 enrollment_number = user_data["student"].get("enrolmentNumber")
                 full_name = user_data["person"].get("fullName", "Unknown User")
                 branch = user_data["student"].get("branch name")                
@@ -74,7 +73,9 @@ class OAuthCallbackView(APIView):
                             'branch': branch,
                         }
                     )
-
+                    if created and User.objects.count() == 1:
+                        Administrator.objects.create(user=user)
+                        print("Admin created for the first user:", user.name)
                     user.is_admin = Administrator.objects.filter(user=user).exists()
                     user.is_reviewer = Reviewer.objects.filter(user=user).exists()
                     user.save()
@@ -86,8 +87,7 @@ class OAuthCallbackView(APIView):
                         
                         print("User already exists:", user.name)  
 
-                    response = redirect('http://localhost:5173/dashboard')  
-                    # print("Setting access_token cookie:", access_token)          
+                    response = redirect('http://localhost:5173/dashboard')           
                     response.set_cookie(
                         'access_token', access_token,
                         httponly=True,
@@ -109,10 +109,7 @@ class OAuthCallbackView(APIView):
 
 class UserDataView(APIView):
     def get(self, request):
-        # Retrieve the access token from the cache
-        # print("Cookies received:", request.COOKIES)
         access_token = request.COOKIES.get('access_token')
-        # print("Access Token Retrieved: mr_malicious ", access_token)
 
         if not access_token:
             return JsonResponse({"error": "Access token is missing or expired. Please re-authenticate."}, status=401)
@@ -175,7 +172,6 @@ class CookieAuthentication(BaseAuthentication):
         enrollment_number = user_data["student"].get("enrolmentNumber")        
         
         user = User.objects.get(enrollment_number=enrollment_number)
-        print("Yayy! Cookie auth worked!!")
         return (user, None) 
 
 
