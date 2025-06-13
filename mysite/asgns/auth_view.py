@@ -279,5 +279,34 @@ class SampleCookieDelete(APIView):
             )    
         return response
 
+class SignupView(APIView):
+    def post(self, request):
+        enrollment_number = request.data.get('enrollment_number')
+        name = request.data.get('name')
+        branch = request.data.get('branch')
+        password = request.data.get('password')
 
-    
+        if not (enrollment_number and name and branch and password):
+            return JsonResponse({"error": "All fields are required."}, status=400)
+
+        if User.objects.filter(enrollment_number=enrollment_number).exists():
+            return JsonResponse({"error": "User with this enrollment number already exists."}, status=400)
+
+        user = User.objects.create(
+            enrollment_number=enrollment_number,
+            name=name,
+            branch=branch
+        )
+        user.set_password(password)
+        user.save()
+        response = Response({"message": "Signup successful"})
+        response.set_cookie(
+            'password_token', user.id,
+            httponly=True,            
+            samesite='None',
+            secure=True,
+            domain= None ,
+            )    
+        return response
+
+        

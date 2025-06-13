@@ -17,6 +17,7 @@ urlpatterns = [
     path('callback/', auth_view.OAuthCallbackView.as_view(), name='oauth_callback'),
     path('user_detail/', auth_view.UserDataView.as_view(), name='user_data'),
     path('login/',auth_view.LoginView.as_view(), name='login'),
+    path('signup/', auth_view.SignupView.as_view(), name='signup'),
     path('logout/', auth_view.LogoutView.as_view(), name='logout'),    
     path('pending-assignments/', views.PendingAssignmentsView.as_view(), name='pending-assignments'),
     path('media/<path:file_path>/', views.serve_file, name='serve_file'),

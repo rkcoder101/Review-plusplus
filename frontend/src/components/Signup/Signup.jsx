@@ -33,9 +33,13 @@ export default function Signup() {
                 password: formData.password,
                 name: formData.name,
                 branch: formData.branch,
-            });
+                },
+                {
+                    withCredentials: true   
+                }
+            );
 
-            alert(`Signup successful! Welcome, ${response.data.name}`);
+            alert(`Signup successful! Welcome`);
             window.location.href = 'http://localhost:5173/dashboard';
             setError('');
         } catch (error) {
