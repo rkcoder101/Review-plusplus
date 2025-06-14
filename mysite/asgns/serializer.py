@@ -105,13 +105,14 @@ class SubmissionSerializer(serializers.ModelSerializer):
     submission_by = serializers.SerializerMethodField()
     assignment_title = serializers.CharField(source='assignment.title', read_only=True)
     team_name = serializers.SerializerMethodField()
+    team_id = serializers.SerializerMethodField()
     reviewer_name = serializers.CharField(source='reviewer.user.name', read_only=True)
     allocation = serializers.SerializerMethodField()
 
     class Meta:
         model = Submission
         fields = [
-            'id', 'user', 'assignment', 'submission_date', 'reviewer', 'comments',
+            'id', 'user', 'assignment','team_id', 'submission_date', 'reviewer', 'comments',
             'attachments', 'checked', 'assigner', 'submission_by', 
             'assignment_title', 'team_name', 'reviewer_name', 'allocation'
         ]
@@ -127,6 +128,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
     def get_team_name(self, obj):
         """Return the team name if the submission is by a team."""
         return obj.team.name if obj.team else None
+
+    def get_team_id(self, obj):
+        return obj.team.id if obj.team else None
 
     def get_allocation(self, obj):
         

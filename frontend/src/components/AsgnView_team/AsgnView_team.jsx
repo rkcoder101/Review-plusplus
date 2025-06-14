@@ -184,7 +184,7 @@ export default function AsgnViewTeam() {
                     </div>
                 </div>
                 <div className="bg-white shadow-lg p-6 rounded-lg border border-gray-200 mt-8">
-                    <h2 className="text-xl font-bold mb-4 text-gray-900">Team Reviews</h2>
+                    <h2 className="text-xl font-bold mb-4 text-gray-900">Previous Reviews</h2>
                     {reviewsLoading && <p className="text-center text-gray-500">Loading reviews...</p>}
                     {reviewsError && <p className="text-center text-red-500">Error: {reviewsError}</p>}
                     {!reviewsLoading && reviews.length === 0 && (
