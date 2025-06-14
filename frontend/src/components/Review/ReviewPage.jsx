@@ -216,7 +216,7 @@ export default function ReviewPage() {
                         onClick={handleSubmit}
                         className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
                     >
-                        Submit
+                        Submit your review
                     </button>
                     <button
                         onClick={handleMarkAsCompleted}

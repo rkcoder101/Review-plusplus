@@ -32,33 +32,38 @@ export default function ReviewHistory() {
                 <div className="text-center text-gray-600">No reviews found.</div>
             ) : (
                 <div className="space-y-4">
-                    {reviews.map((review) => (
-                        <div
-                            key={review.id}
-                            className={`p-4 border rounded-lg shadow-md ${
-                                review.submitted_by_team ? "bg-purple-100" : "bg-blue-100"
-                            }`}
-                        >
-                            <h2 className="text-xl font-semibold text-gray-700 mb-2">{review.submission_title}</h2>
-                            <p className="text-sm text-gray-600 mb-1">
-                                <strong>Submitted by:</strong> {review.submitted_by_user}
-                            </p>
-                            {review.submitted_by_team && (
+                    {reviews.map((review) => {
+                        const handleCardClick = () => {
+                            window.location.href = `http://localhost:5173/review/${review.id}`;
+                        };
+                        return (
+                            <div
+                                key={review.id}
+                                className={`p-4 border rounded-lg shadow-md ${review.submitted_by_team ? "bg-purple-100" : "bg-blue-100"
+                                    } cursor-pointer`}
+                                onClick={handleCardClick}
+                            >
+                                <h2 className="text-xl font-semibold text-gray-700 mb-2">{review.submission_title}</h2>
                                 <p className="text-sm text-gray-600 mb-1">
-                                    <strong>Team:</strong> {review.submitted_by_team}
+                                    <strong>Submitted by:</strong> {review.submitted_by_user}
                                 </p>
-                            )}
-                            <p className="text-sm text-gray-600 mb-1">
-                                <strong>Submission Date:</strong> {new Date(review.submission_date).toLocaleString()}
-                            </p>
-                            <p className="text-sm text-gray-600 mb-1">
-                                <strong>Review Date:</strong> {new Date(review.date).toLocaleString()}
-                            </p>
-                            <p className="text-sm text-gray-600 mb-2">
-                                <strong>Comments:</strong> {review.comments}
-                            </p>
-                        </div>
-                    ))}
+                                {review.submitted_by_team && (
+                                    <p className="text-sm text-gray-600 mb-1">
+                                        <strong>Team:</strong> {review.submitted_by_team}
+                                    </p>
+                                )}
+                                <p className="text-sm text-gray-600 mb-1">
+                                    <strong>Submission Date:</strong> {new Date(review.submission_date).toLocaleString()}
+                                </p>
+                                <p className="text-sm text-gray-600 mb-1">
+                                    <strong>Review Date:</strong> {new Date(review.date).toLocaleString()}
+                                </p>
+                                <p className="text-sm text-gray-600 mb-2">
+                                    <strong>Comments:</strong> {review.comments}
+                                </p>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
