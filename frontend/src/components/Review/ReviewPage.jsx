@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 export default function ReviewPage() {
-    const { id } = useParams(); 
-    const [data, setData] = useState(null); 
-    const [loading, setLoading] = useState(true); 
-    const [error, setError] = useState(null); 
+    const { id } = useParams();
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [submissionText, setSubmissionText] = useState("");
 
     const BACKEND_URL = "http://127.0.0.1:8000/asgns";
@@ -33,22 +33,23 @@ export default function ReviewPage() {
     if (error) return <div>Error: {error}</div>;
 
     const { current_submission, assignment_details, previous_submissions } = data;
-    
+
     const handleMarkAsCompleted = async () => {
         try {
+            await handleSubmit();
             const response = await fetch(`${BACKEND_URL}/mark_as_completed/${current_submission.allocation}/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
-    
+
             if (!response.ok) {
                 throw new Error("Failed to mark as completed.");
             }
-    
+
             const result = await response.json();
-            alert(result.message); 
+            alert(result.message);
         } catch (err) {
             console.error(err.message);
             alert("Failed to mark as completed. Please try again.");
@@ -206,23 +207,31 @@ export default function ReviewPage() {
                 {/* Review Input */}
                 <div className="bg-white shadow-lg p-6 rounded-lg border border-gray-200">
                     <h2 className="text-xl font-bold mb-4 text-gray-900">Add Your Review</h2>
-                    <textarea
-                        value={submissionText}
-                        onChange={(e) => setSubmissionText(e.target.value)}
-                        className="w-full border rounded-lg p-3 mb-4 border-gray-300"
-                        placeholder="Enter your review here..."
-                    />
-                    <button
-                        onClick={handleSubmit}
-                        className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
-                    >
-                        Submit your review
-                    </button>
+                    {data.is_completed === false && (
+                        <>
+                            <textarea
+                                value={submissionText}
+                                onChange={(e) => setSubmissionText(e.target.value)}
+                                className="w-full border rounded-lg p-3 mb-4 border-gray-300"
+                                placeholder="Enter your review here..."
+                            />
+                            <button
+                                onClick={handleSubmit}
+                                className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
+                            >
+                                Submit your review
+                            </button>
+                        </>
+                    )}
                     <button
                         onClick={handleMarkAsCompleted}
-                        className="ml-4 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
+                        className={`ml-4 py-2 px-4 rounded-lg transition text-white ${data.is_completed
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-green-500 hover:bg-green-600"
+                            }`}
+                        disabled={data.is_completed}
                     >
-                        Mark as Completed
+                        {data.is_completed ? "Already marked as completed" : "Mark as Completed"}
                     </button>
                 </div>
             </div>

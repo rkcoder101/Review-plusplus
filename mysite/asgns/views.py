@@ -363,12 +363,13 @@ class ReviewView(APIView):
         
         # Serialize the previous submissions with attachments
         previous_submissions_data = SubmissionSerializer(previous_submissions, many=True).data
-        
+        is_completed = Assignment_Allocated_to.objects.filter(assignment_id=assignment.id,is_completed=True).exists()
         # Response structure
         response_data = {
             "current_submission": SubmissionSerializer(submission).data,
             "assignment_details": assignment_data,
             "previous_submissions": previous_submissions_data,
+            "is_completed": is_completed
         }
         
         return Response(response_data)
