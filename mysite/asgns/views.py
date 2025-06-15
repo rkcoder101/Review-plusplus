@@ -363,7 +363,21 @@ class ReviewView(APIView):
         
         # Serialize the previous submissions with attachments
         previous_submissions_data = SubmissionSerializer(previous_submissions, many=True).data
-        is_completed = Assignment_Allocated_to.objects.filter(assignment_id=assignment.id,is_completed=True).exists()
+        if submission.team:
+            allocation = Assignment_Allocated_to.objects.filter(
+                assignment_id=assignment.id,
+                team_id=submission.team.id
+            ).first()
+            print(f"team found: {submission.team.name}")
+        elif submission.user:
+            allocation = Assignment_Allocated_to.objects.filter(
+                assignment_id=assignment.id,
+                user_id=submission.user.id
+            ).first()
+            print(f"user found: {submission.user.name}")
+        else:
+            allocation = None
+        is_completed = allocation.is_completed if allocation else False
         # Response structure
         response_data = {
             "current_submission": SubmissionSerializer(submission).data,
